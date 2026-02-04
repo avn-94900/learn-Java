@@ -1,10 +1,4 @@
 
-**Business Use Case**: Although `TreeMap` provides natural ordering, use `LinkedHashMap` with sorting logic when **you want to rank records** but **preserve the order of ranks**.
-
----
-
-Would you like similar examples for `NavigableMap`, `EnumMap`, or `WeakHashMap`? Each has strong real-world relevance when used in the right context.
-
 
 Excellent! Let’s now explore **3 more specialized `Map` implementations**:
 

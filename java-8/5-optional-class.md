@@ -202,14 +202,14 @@ There are several ways to create `Optional` objects:
 
 ### 10. `map(mapper)`
 
-    * Transforms the value inside the `Optional` using a `Function`.
-    * If the `Optional` is empty, it returns an empty `Optional`.
+   * Transforms the value inside the `Optional` using a `Function`.
+   * If the `Optional` is empty, it returns an empty `Optional`.
 
      ```java
      Optional<String> optionalValue = Optional.ofNullable("  abc  ");
      Optional<String> trimmedValue = optionalValue.map(String::trim);
-     trimmedValue.ifPresent(value -> System.out.println("Trimmed Value: " + value)); // Output: Trimmed Value: abc
-
+     trimmedValue.ifPresent(value -> System.out.println("Trimmed Value: " + value)); // Output: Trimmed Value: ab
+     
      Optional<String> emptyOptional = Optional.empty();
      Optional<Integer> mappedEmpty = emptyOptional.map(String::length);
      mappedEmpty.ifPresent(length -> System.out.println("This won't be printed"));

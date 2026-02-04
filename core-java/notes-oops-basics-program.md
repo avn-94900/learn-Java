@@ -14,9 +14,6 @@ real time world existing thing. has haracterstics
 */
 
 
-
-
-
 class SuperClass {
     // Static variable
     static int staticVar = 10;
@@ -78,11 +75,11 @@ public class Main {
         
         SubClass subClassRef=(SubClass)superClassRef ;
         
-                // Accessing static variable
-        System.out.println("Static Variable: " + subClassRef.staticVar); // Output: 10 (SuperClass static variable)
+        // Access using subclass reference
+        System.out.println("Static Variable: " + subClassRef.staticVar); // Output: 30 (SubClass static variable)
 
-        // Accessing instance variable
-        System.out.println("Instance Variable: " + subClassRef.instanceVar); // Output: 20 (SuperClass instance variable)
+        // Access using subclass reference
+        System.out.println("Instance Variable: " + subClassRef.instanceVar); // Output: 40 (SubClass instance variable)
 
         // Calling static method
         subClassRef.staticMethod(); // Output: Static method in SuperClass (SuperClass static method)
@@ -90,23 +87,14 @@ public class Main {
         // Calling instance method
         subClassRef.instanceMethod(); // Output: Instance method in SubClass (SubClass instance method)
 
-        // Obj is created using the Subclass, later it get upcasted.
-        // Access using subclass reference
-        System.out.println("Static Variable (SubClass): " + subClassRef.staticVar); // Output: 30
-        System.out.println("Instance Variable (SubClass): " + subClassRef.instanceVar); // Output: 40
-        subClassRef.staticMethod(); // Output: Static method in SubClass
-        subClassRef.instanceMethod(); // Output: Instance method in SubClass
-
         // Upcasting to superclass reference
-        SuperClass superClassRef = subClassRef;
+        SuperClass superClassRef1 = subClassRef;
 
         // Access using superclass reference
-        System.out.println("Static Variable (SuperClass): " + superClassRef.staticVar); // Output: 10
-        System.out.println("Instance Variable (SuperClass): " + superClassRef.instanceVar); // Output: 20
-        superClassRef.staticMethod(); // Output: Static method in SuperClass
-        superClassRef.instanceMethod(); // Output: Instance method in SubClass
+        System.out.println("Static Variable (SuperClass): " + superClassRef1.staticVar); // Output: 10
+        System.out.println("Instance Variable (SuperClass): " + superClassRef1.instanceVar); // Output: 20
+        superClassRef1.staticMethod(); // Output: Static method in SuperClass
+        superClassRef1.instanceMethod(); // Output: Instance method in SubClass
     }
-}
-        
-    
+}    
 ```

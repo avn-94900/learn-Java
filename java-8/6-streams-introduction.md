@@ -208,6 +208,15 @@ Here are various ways to create a stream:
     IntStream flatIntStream = nestedList.stream()
                                        .flatMapToInt(list -> list.stream().mapToInt(Integer::intValue));
     // Result: IntStream containing 1, 2, 3, 4
+
+
+    List<List<Integer>> nestedList = Arrays.asList(
+    Arrays.asList(1, 2),
+    Arrays.asList(3, 4)
+    );
+    Stream<Integer> flatStream = nestedList.stream()
+                                           .flatMap(List::stream); // flatten to Stream<Integer>
+    flatStream.forEach(System.out::println);
     ```
 
 ---
@@ -255,7 +264,11 @@ Here are various ways to create a stream:
                                        .sorted(Comparator.reverseOrder())
                                        .collect(Collectors.toList());
     // Result: ["Charlie", "Bob", "Alice"]
+    
+    // .sorted()                             - Natural order (lexicographical for Strings)
+    // .sorted(Comparator.reverseOrder())    - .sorted(Comparator.reverseOrder())
     ```
+
 
 * ***Sorts elements using a custom comparator (by string length).***
     ```java
