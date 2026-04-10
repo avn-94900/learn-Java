@@ -48,11 +48,13 @@ public class FunctionDemo {
         System.out.println(lengthFunction2.apply("World"));  // Output: 5
         
         // Function composition with andThen
+        // First function runs → its result goes into second function
         Function<Integer, Integer> multiplyByTwo = x -> x * 2;
         Function<String, Integer> lengthAndMultiply = lengthFunction2.andThen(multiplyByTwo);
         System.out.println(lengthAndMultiply.apply("Hello"));  // Output: 10 (5 * 2)
         
         // Function composition with compose
+        // Second function runs first → its result goes into first function
         Function<String, String> toUpperCase = s -> s.toUpperCase();
         Function<String, Integer> upperCaseLength = lengthFunction2.compose(toUpperCase);
         System.out.println(upperCaseLength.apply("Hello"));  // Output: 5

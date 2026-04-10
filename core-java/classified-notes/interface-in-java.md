@@ -459,6 +459,27 @@ public class DefaultMethodExamples {
 
 <br/><br/><br/>
 
+## Interface vs Abstract Class
+
+Understanding the differences between interfaces and abstract classes is crucial for proper design decisions in Java.
+
+### Comparison Table:
+
+| Feature | Interface | Abstract Class |
+|---------|-----------|----------------|
+| Variables | Always `public static final` | Can be `private`, `public`, `static`, `protected`, `final` |
+| Variable initialization | Only declaration, no initialization | Can initialize variables |
+| Blocks/Initializers | Cannot write blocks (instance/static) | Can include both static and instance initializers |
+| Constructors | Cannot write constructors | Can write constructors |
+| Object creation | Cannot create objects, only reference variables | Cannot instantiate directly, but can be extended |
+| State representation | Doesn't represent object state | May represent object state |
+| Methods | Abstract, default, static, private (Java 9+) | Abstract and concrete methods |
+| Default methods | Supported | Not applicable (uses regular methods) |
+| Multiple inheritance | Supported | Not supported |
+| Object class methods | Cannot directly override | Can override |
+
+<br/>
+
 
 ## Java: Abstraction, Interfaces, Inheritance & Diamond Problem
 
