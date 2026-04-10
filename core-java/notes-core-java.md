@@ -84,7 +84,7 @@
 | 59  | [What is the Java Module System and its features?](#java-9-features)                           |
 | 60  | [What are the new features introduced in Java 9 and later versions?](#java-9-features)         | -->
 
-## Abstract Classes
+<!-- ## Abstract Classes
 
 1. Can contain `static`, `final`, and `instance variables` with any `access modifier` (no restriction)
 2. Can have constructors, static methods, and final methods
@@ -96,55 +96,9 @@
 8. Subclasses must either implement all abstract methods or be declared abstract themselves 
 9. Can extend only one abstract class (single inheritance)
 10. Can implement interfaces
-11. A class can extend only one abstract class but implement multiple interfaces
+11. A class can extend only one abstract class but implement multiple interfaces -->
 
-    - Abstract classes **can have instance variables**, and constructors help **initialize those variables**.
-
-    - Even though **you can’t instantiate** an abstract class directly, its **constructor is called when a concrete subclass is instantiated**.
-
-### 📌 Example:
-
-```java
-abstract class Animal {
-	int typeOfAnimal = "Animal"; // instance variable with direct initialization
-    String name;  // any access modfier -  (final also)
-
-    // static & Non-Static blocks for var initilization.
-    // static & Non-Static methods. - (private,final)
-
-    // Constructor in abstract class
-    Animal(String name) {
-        this.name = name;
-        System.out.println("Animal constructor called");
-    }
-}
-
-class Dog extends Animal {
-    Dog(String name) {
-        super(name);
-        System.out.println("Dog constructor called");
-    }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        Dog d = new Dog("Buddy");
-    }
-}
-```
-
-### 🧾 Output:
-
-```
-Animal constructor called
-Dog constructor called
-```
-
-So, the constructor of the abstract class runs when the child class is created.
-
----
-
-## Interfaces
+<!-- 
 
 1. All interface methods are implicitly `public` and `abstract` (before Java 8)
 2. Cannot be instantiated.
@@ -187,79 +141,9 @@ interface Animal {
 3. Can be overridden by a default method in a sub-interface
 4. If a class implements multiple interfaces with the same default method, it must override it
 5. Cannot be marked as `final`, `static`, `abstract`, or `synchronized`
-6. Can access static interface methods
-<details>
-<summary>code example for default methods in interface</summary>
-
-```java
-// ❌ Invalid default method declarations — commented to avoid compile errors
-interface InvalidDefaults {
-
-    // ❌ Cannot use final with default methods — they are meant to be overridden
-    // final default void method1();        
-
-    // ❌ Cannot use static with default methods — static and default don't go together
-    // static default void method2();       
-
-    // ❌ Cannot use abstract with default methods — default has a body, abstract doesn't
-    // abstract default void method3();     
-
-    // ❌ Cannot use synchronized — not allowed in interface methods
-    // synchronized default void method4(); 
-}
+6. Can access static interface methods -->
 
 
-// ✅ Multiple interfaces with same default method — must resolve conflict
-interface A {
-    default void greet() {
-        System.out.println("Hello from A");
-    }
-}
-
-interface B {
-    default void greet() {
-        System.out.println("Hello from B");
-    }
-}
-
-class MyClass implements A, B {
-    // Must override to resolve conflict between A and B
-    @Override
-    public void greet() {
-        System.out.println("Hello from MyClass");
-    }
-}
-
-
-// ✅ Overriding default method in a sub-interface
-interface Parent {
-    default void show() {
-        System.out.println("Parent show");
-    }
-}
-
-interface Child extends Parent {
-    @Override
-    default void show() {
-        System.out.println("Child show");
-    }
-}
-
-
-// ✅ Main class to run all examples
-public class DefaultMethodExamples {
-    public static void main(String[] args) {
-        System.out.println("=== Conflict Resolution ===");
-        MyClass obj = new MyClass();
-        obj.greet(); // Output: Hello from MyClass
-
-        System.out.println("\n=== Sub-interface override ===");
-        Child child = new Child() {}; // anonymous class implementation
-        child.show(); // Output: Child show
-    }
-}
-```
-</details>
 
 
 ## Marker Interfaces
@@ -320,81 +204,6 @@ interface MyComparator<T> {
 }
 ```
 
-## Polymorphism
-
-1. Ability of an object to take many forms
-2. Achieved through inheritance and interfaces
-3. Types:
-   - Compile-time (method overloading)
-   - Runtime (method overriding)
-4. Method calls are resolved at runtime based on the object's actual type
-5. Objects behave differently based on their actual runtime type
-6. Allows reference variables of a superclass to refer to subclass objects
-7. Enables the use of superclass type to refer to subclass object
-8. Enables code reuse and flexibility
-9. Polymorphic references can only access methods defined in the reference type
-10. Type casting required to access subclass-specific methods
-
-## Method Overloading
-
-> **Method Overloading** is resolved at **compile-time**.                                                         
-> It refers to the ability to define multiple methods with the same name but different parameter types or counts in the same class.
-
-1. Multiple methods with the same name but different parameters in the same class
-2. Differences can be:
-   - Number of parameters
-   - Data type of parameters
-   - Order of parameters
-3. Cannot overload methods that differ only by return type. Return type alone is not sufficient for overloading and Return type is optional.
-4. Determined at compile time (static binding)
-5. Access modifiers can be different for overloaded methods. (Access modifiers alone is not sufficient)
-6. Exception declarations can be different
-7. Can involve static and non-static methods
-8. Constructors can be overloaded
-9. Method resolution follows most specific parameter matching
-
-## Method Overriding
-
-> **Method Overriding** is resolved at **runtime**.                                                         
-> It allows a subclass to provide a specific implementation of a method already defined in its superclass.
-
-1. Redefining a superclass method in a subclass with the same signature
-2. Method signature must be identical (name, parameters, return type)
-3. Return type can be a subtype of the original return type (covariant return)
-4. Access modifier cannot be more restrictive than the overridden method
-5. Cannot throw broader exceptions than the overridden method
-6. `@Override` annotation is recommended but optional
-7. `final`, `static`, `private` methods cannot be overridden
-   - `static` methods cannot be overridden (although they can be hidden)
-   - `private` methods cannot be overridden
-8. Determined at runtime (dynamic binding)
-9. Can use `super` keyword to call the superclass version of the method
-
- **Example for Covariant Return type:**
-
-```java
-class Animal {}
-
-class Dog extends Animal {}
-
-class Parent {
-    Animal getAnimal() {
-        return new Animal();
-    }
-}
-
-class Child extends Parent {
-    Dog getAnimal() {
-        return new Dog(); // Valid: Dog is a subclass of Animal
-    }
-}
-```
-
-In the above code:
-
-* `Parent.getAnimal()` returns `Animal`
-* `Child.getAnimal()` returns `Dog`, which is a subclass of `Animal`
-* This is valid because of covariant return type
 
 ## Constructors
 
