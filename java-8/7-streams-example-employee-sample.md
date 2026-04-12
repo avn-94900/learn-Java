@@ -197,20 +197,148 @@ Feel free to star and fork these repositories if you find them useful!
 * _Store unique employee objs._
     ```java
      // approach - 1
-    Set<Employee> uniqueEmployees = employeeList.stream()
-                .collect(Collectors.toMap(
-                                e -> e.getId(),            // Use employee ID as key
-                                Function.identity(),       // Value: Employee object
-                                (e1, e2) -> e1             // If duplicate key (same ID), keep first
-                )).values()
-                  .stream()
-                  .collect(Collectors.toSet());
-
-    // approach - 2
     Set<Long> seen = new HashSet<>();
     Set<Employee> uniqueEmployees = employeeList.stream()
                         .filter(e -> seen.add(e.getId()))  // returns false for duplicates
                         .collect(Collectors.toSet());
+                        
+        // approach - 2
+        Set<Employee> uniqueEmployees =
+                employeeList.stream()
+                        .collect(Collectors.toMap(
+                                Employee::getId,      // key mapper
+                                // e -> e.getId()
+
+                                Function.identity(),  // value mapper
+                                // Alternative:
+                                // e -> e
+
+                                (e1, e2) -> e1        // keep first duplicate
+                                /*
+                                Alternative merge behaviors:
+
+                                Keep LAST duplicate:
+                                (e1, e2) -> e2
+
+                                Custom merge logic:
+                                (e1, e2) -> e1.getName().length()
+                                               > e2.getName().length()
+                                               ? e1 : e2
+                                */
+                        ))
+                        .values()
+                        .stream()
+                        .collect(Collectors.toSet());
+
+        System.out.println(uniqueEmployees);
+
+
+        /*
+        ===========================================================
+        OVERLOADED toMap() VERSION
+        ===========================================================
+
+        toMap(keyMapper,
+              valueMapper,
+              mergeFunction,
+              mapSupplier)
+
+        Useful when order matters.
+        */
+
+        Set<Employee> orderedUniqueEmployees =
+                new LinkedHashSet<>(
+
+                        employeeList.stream()
+                                .collect(Collectors.toMap(
+                                        Employee::getId,
+                                        Function.identity(),
+                                        (e1, e2) -> e1,
+                                        LinkedHashMap::new
+                                        // Alternative:
+                                        // HashMap::new
+                                        // TreeMap::new
+                                ))
+                                .values()
+
+                );
+
+        System.out.println(orderedUniqueEmployees);
+
+
+        /*
+        ===========================================================
+        ALTERNATIVE APPROACH (If equals/hashCode implemented)
+        ===========================================================
+
+        Requires:
+        equals() and hashCode() based on id.
+        */
+
+        Set<Employee> usingDistinct =
+                employeeList.stream()
+                        .distinct()
+                        .collect(Collectors.toSet());
+
+        /*
+        Works only if:
+
+        @Override
+        public boolean equals(Object o) {
+            return this.id == ((Employee)o).id;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id);
+        }
+        */
+
+
+        /*
+        ===========================================================
+        ANOTHER ALTERNATIVE — groupingBy()
+        ===========================================================
+
+        Groups by id → take first employee.
+        */
+
+        Set<Employee> usingGrouping =
+                employeeList.stream()
+                        .collect(Collectors.groupingBy(
+                                Employee::getId
+                        ))
+                        .values()
+                        .stream()
+                        .map(list -> list.get(0))
+                        // Alternative:
+                        // list -> list.get(list.size()-1)  // keep last
+                        .collect(Collectors.toSet());
+
+
+
+        /*
+        ===========================================================
+        SHORT NOTES
+        ===========================================================
+
+        Function.identity()
+            → same as (e -> e)
+
+        (e1, e2) -> e1
+            → keep first duplicate
+
+        (e1, e2) -> e2
+            → keep last duplicate
+
+        LinkedHashMap::new
+            → preserves insertion order
+
+        distinct()
+            → works only with equals/hashCode
+
+        ===========================================================
+        */
 
     ```
 

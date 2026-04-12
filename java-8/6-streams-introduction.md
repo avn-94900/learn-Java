@@ -2,60 +2,137 @@
 
 ## 📜 Introduction
 
-Java Streams, introduced in Java 8, provide a powerful and declarative way to process sequences of elements. They allow for functional-style operations on collections, enabling concise and potentially parallelized data manipulation. Streams support two main types of operations: **Intermediate** and **Terminal**.
+- A Stream in Java is a way to process a collection of data step by step, using operations like filtering, mapping, and sorting, without changing the original data.
+
+<br/>
+
+ - Java Streams, introduced in Java 8, provide a powerful and declarative way to process sequences of elements. 
+ - They allow for functional-style operations on collections, enabling concise and potentially parallelized data manipulation. Streams support two main types of operations: **Intermediate** and **Terminal**.
+
+<br/>
+
+### 1. INTERMEDIATE OPERATIONS (Lazy — return Stream)
+---
+- Intermediate operations return another `Stream` as a result, allowing them to be chained together to form a processing pipeline.
+- A key characteristic is that they are ***lazy***; they don't execute until a terminal operation is invoked on the stream pipeline.
+
+```markdown
+INTERMEDIATE OPERATIONS (Lazy)
+
+│
+├── 🔹 Filtering (Select elements)
+│   ├── filter(Predicate<T>)
+│   ├── takeWhile(Predicate<T>)      (Java 9+)
+│   └── dropWhile(Predicate<T>)      (Java 9+)
+│
+├── 🔹 Mapping (Transform elements)
+│   ├── map(Function<T,R>)
+│   ├── flatMap(Function<T,Stream<R>>)
+│   └── mapMulti(BiConsumer<T,Consumer<R>>)  (Java 16+)
+│
+├── 🔹 Sorting & Removing Duplicates
+│   ├── distinct()
+│   ├── sorted()
+│   └── sorted(Comparator<T>)
+│
+├── 🔹 Slicing (Control size)
+│   ├── limit(long)
+│   └── skip(long)
+│
+├── 🔹 Debugging / Inspection
+│   └── peek(Consumer<T>)
+│
+└── 🔹 Type Conversion (Primitive Streams)
+    ├── boxed()
+    ├── asLongStream()
+    └── asDoubleStream()
+```
 
 ---
-### Additional Resources
 
-If you found this guide helpful, you might also be interested in my other Spring Framework resources:
-- [Core Java & Java-8 Interview Questions](https://github.com/anilvn/Java-Interview-Questions/tree/main)
-- [Spring Boot Interview Questions](https://github.com/anilvn/spring-boot-interview-questions/tree/main)
-- [Microservices with Spring Cloud Tutorials](https://javatechonline.com/microservices-tutorial/)
+### 2. TERMINAL OPERATIONS (Execute Stream)
+---
+- Terminal operations produce a non-stream result, such as a primitive value, an object, a collection, or simply perform a side effect (like `forEach`).
+- They trigger the ***eager*** execution of the entire stream pipeline (including all chained intermediate operations).
+- A stream pipeline can have at most one terminal operation, which must be the final operation.
 
-Feel free to star and fork these repositories if you find them useful!
+```markdown
+TERMINAL OPERATIONS (Execute Stream)
+
+│
+├── 🔹 Iteration
+│   ├── forEach(Consumer<T>)
+│   └── forEachOrdered(Consumer<T>)
+│
+├── 🔹 Collecting Results
+│   ├── collect(Collector)
+│   ├── toList()              (Java 16+)
+│   ├── toArray()
+│   └── toArray(IntFunction<A[]>)
+│
+├── 🔹 Finding Elements
+│   ├── findFirst()
+│   └── findAny()
+│
+├── 🔹 Matching Conditions
+│   ├── anyMatch(Predicate<T>)
+│   ├── allMatch(Predicate<T>)
+│   └── noneMatch(Predicate<T>)
+│
+├── 🔹 Counting
+│   └── count()
+│
+├── 🔹 Reduction (Combine Elements)
+│   ├── reduce(BinaryOperator<T>)
+│   ├── reduce(identity, accumulator)
+│   └── reduce(identity, accumulator, combiner)
+│
+├── 🔹 Min / Max
+│   ├── min(Comparator<T>)
+│   └── max(Comparator<T>)
+│
+└── 🔹 Numeric Operations (Primitive Streams)
+    ├── sum()
+    ├── average()
+    └── summaryStatistics()
+```
 
 ---
 
-## ⚙️ Intermediate Operations
+### 3. STREAM CREATION METHODS (Often Forgotten but Important)
+----
 
-> Intermediate operations return another `Stream` as a result, allowing them to be chained together to form a processing pipeline.
-> A key characteristic is that they are ***lazy***; they don't execute until a terminal operation is invoked on the stream pipeline.
+```markdown
+STREAM CREATION METHODS
 
-**Common Examples:**
+│
+├── 🔹 From Collections
+│   ├── collection.stream()
+│   └── collection.parallelStream()
+│
+├── 🔹 From Values
+│   └── Stream.of(T...)
+│
+├── 🔹 From Arrays
+│   └── Arrays.stream(array)
+│
+├── 🔹 Infinite Streams
+│   ├── Stream.generate(Supplier<T>)
+│   └── Stream.iterate(seed, UnaryOperator<T>)
+│
+├── 🔹 From Files
+│   └── Files.lines(Path)
+│
+└── 🔹 Primitive Streams
+    ├── IntStream.range()
+    ├── IntStream.rangeClosed()
+    ├── LongStream.range()
+    └── DoubleStream.of()
+```
+<br/><br/>
 
-* `filter(Predicate<T>)`
-* `map(Function<T, R>)`
-* `flatMap(Function<T, Stream<R>>)`
-* `mapMulti(BiConsumer<T, Consumer<R>>)` (Java 16+)
-* `distinct()`
-* `sorted()` / `sorted(Comparator<T>)`
-* `peek(Consumer<T>)` (Mainly for debugging)
-* `limit(long)`
-* `skip(long)`
-* `takeWhile(Predicate<T>)` (Java 9+)
-* `dropWhile(Predicate<T>)` (Java 9+)
 
----
 
-## 🏁 Terminal Operations
-
-> Terminal operations produce a non-stream result, such as a primitive value, an object, a collection, or simply perform a side effect (like `forEach`).
-> They trigger the ***eager*** execution of the entire stream pipeline (including all chained intermediate operations).
-> A stream pipeline can have at most one terminal operation, which must be the final operation.
-
-**Common Examples:**
-
-* `forEach(Consumer<T>)` / `forEachOrdered(Consumer<T>)`
-* `toArray()` / `toArray(IntFunction<A[]>)`
-* `reduce(...)`
-* `collect(...)`
-* `toList()` (Java 16+)
-* `min(Comparator<T>)` / `max(Comparator<T>)`
-* `count()`
-* `anyMatch(Predicate<T>)` / `allMatch(Predicate<T>)` / `noneMatch(Predicate<T>)`
-* `findFirst()` / `findAny()`
-
----
 
 ## ⚖️ Intermediate vs. Terminal Operations
 
@@ -178,6 +255,35 @@ Here are various ways to create a stream:
     IntStream intStream = Stream.of("apple", "banana", "cherry")
                                .mapToInt(String::length);
     // Result: IntStream containing 5, 6, 6
+
+    List<Integer> integers =
+        Stream.of("apple", "banana", "cherry")
+              .mapToInt(String::length)
+              .boxed()
+              .toList();
+
+    List<Integer> integers =
+        Stream.of("apple", "banana", "cherry")
+              .map(String::length)
+              .toList();
+
+    // mapToDouble
+    DoubleStream doubleStream =
+        Stream.of("10.5", "20.75", "30.25")
+              .mapToDouble(Double::parseDouble);
+
+    List<Double> prices =
+        Stream.of("10.5", "20.75", "30.25")
+              .mapToDouble(Double::parseDouble)
+              .boxed()
+              .toList();
+
+    // mapToLong
+    List<Long> fileSizes =
+        Stream.of("1024", "2048", "4096")
+              .mapToLong(Long::parseLong)
+              .boxed()
+              .toList();
     ```
 
 ---
@@ -390,10 +496,83 @@ Here are various ways to create a stream:
 
 * ***Combines stream elements into a single optional result using a binary operator (concatenates strings).***
     ```java
-    Optional<String> concatenated = Stream.of("a", "b", "c")
-                                         .reduce((s1, s2) -> s1 + s2);
-    concatenated.ifPresent(s -> System.out.println("\nreduce (Optional): " + s));
-    // Output: abc
+    Optional<T> reduce(BinaryOperator<T> accumulator)
+    -----------------------------------------------------------
+    // Use Case 1 — Sum of Numbers - mulitiple number.
+    Optional<Integer> sum =
+            Stream.of(1, 2, 3, 4)
+                  .reduce((a, b) -> a + b);
+    
+    System.out.println(sum.get()); // 10
+    
+    int total =
+            products.stream()
+                    .map(p -> p.price)
+                    .reduce(0, (a, b) -> a + b);
+    -----------------------------------------------------------
+    T reduce(T identity, BinaryOperator<T> accumulator)
+    -----------------------------------------------------------
+    int sum =
+            Stream.of(1, 2, 3, 4)
+                  .reduce(0, (a, b) -> a + b);
+    
+    System.out.println(sum); // 10
+    
+    int product =
+            Stream.of(1, 2, 3, 4)
+                  .reduce(1, (a, b) -> a * b);
+    
+    System.out.println(product); // 24
+    -----------------------------------------------------------
+    <U> U reduce(
+            U identity,
+            BiFunction<U, ? super T, U> accumulator,
+            BinaryOperator<U> combiner)
+    -----------------------------------------------------------
+    int parallelSum =
+            Stream.of(1, 2, 3, 4)
+                  .parallel()
+                  .reduce(
+                          0,
+                          (a, b) -> a + b,
+                          (x, y) -> x + y
+                  );
+    
+    System.out.println(parallelSum); // 10
+    -----------------------------------------------------------
+    // Use Case 2 — Find Maximum
+    Optional<Integer> max =
+            Stream.of(5, 8, 2, 10, 3)
+                  .reduce((a, b) -> a > b ? a : b);
+    
+    System.out.println(max.get()); // 10
+    
+    
+    // Use Case 3 — Join Strings
+    String result =
+            Stream.of("Java", "Stream", "API")
+                  .reduce("", (a, b) -> a + " " + b);
+    
+    System.out.println(result);
+    
+    // Use Case 4 — Count Characters in Strings
+    int totalLength =
+            Stream.of("apple", "banana", "cherry")
+                  .map(String::length)
+                  .reduce(0, (a, b) -> a + b);
+    
+    System.out.println(totalLength); // 17
+    -----------------------------------------------------------
+    
+    /*
+    avoid using the reduce for below - dont make complex
+    - sum()
+    - count()
+    - max()
+    - min()
+    - average()
+    - collect()
+    */
     ```
 
 * ***Combines stream elements using an identity value and a binary operator (sums integers).***

@@ -98,30 +98,368 @@ Each method call creates a **Stack Frame** containing:
 3. **Return Address**: Where to continue after method ends
 
 ### Stack vs Heap Example
-
 ```java
+import java.util.ArrayList;
+import java.util.List;
+
 public class StackHeapExample {
-    private static int staticVar = 100;    // Metaspace
-    private int instanceVar = 50;          // Heap (with object)
-    
-    public void demonstrateMemory() {      // Method in Metaspace
-        // === STACK MEMORY ===
-        int localPrimitive = 42;           // Stored directly in Stack
-        String localReference = "Hello";   // Reference in Stack
-        List<String> localList = new ArrayList<>(); // Reference in Stack
-        
-        // === HEAP MEMORY ===
-        // "Hello" string object → String Pool (Heap)
-        // ArrayList object → Heap
-        // this.instanceVar → Heap (part of object instance)
-        
-        processData(localPrimitive);       // New stack frame created
-    } // Stack frame destroyed here, local variables cleared
-    
-    private void processData(int param) {  // New stack frame
-        int result = param * 2;            // Local to this stack frame
-    } // Stack frame destroyed, 'param' and 'result' cleared
+
+    /*
+     ============================================================
+     CLASS LEVEL MEMORY
+     ============================================================
+
+     staticVar:
+
+     - The variable belongs to the class, not to objects.
+     - Stored in the Class Area (Method Area).
+     - Class metadata itself is stored in Metaspace.
+     - Since it is a primitive, the actual value (100)
+       is stored along with class-level data.
+
+     Memory Location:
+     Class Area (Method Area) → staticVar = 100
+    */
+    private static int staticVar = 100;
+
+
+    /*
+     ============================================================
+     INSTANCE VARIABLE MEMORY
+     ============================================================
+
+     instanceVar:
+
+     - This variable is part of the object instance.
+     - Whenever an object is created using 'new',
+       this variable is stored inside that object.
+     - The object lives in HEAP memory.
+
+     Memory Location:
+     Heap → Object → instanceVar = 50
+    */
+    private int instanceVar = 50;
+
+
+    /*
+     ============================================================
+     METHOD METADATA
+     ============================================================
+
+     Method definitions themselves:
+
+     - Method bytecode stored in Class Area.
+     - Class structure metadata stored in Metaspace.
+     - When method is called, stack frame is created.
+
+     This method demonstrates stack vs heap behavior.
+    */
+    public void demonstrateMemory() {
+
+        /*
+         ============================================================
+         STACK MEMORY (Method Stack Frame)
+         ============================================================
+
+         localPrimitive:
+
+         - Primitive value stored directly in STACK.
+         - Exists only during this method execution.
+         - Removed after method finishes.
+
+         Memory Location:
+         Stack → localPrimitive = 42
+        */
+        int localPrimitive = 42;
+
+
+        /*
+         ============================================================
+         STRING REFERENCE AND STRING POOL
+         ============================================================
+
+         localReference:
+
+         - Variable stored in STACK.
+         - Points to String object.
+
+         "Hello" String:
+
+         - String literal stored in STRING POOL.
+         - String Pool is inside HEAP.
+         - If "Hello" already exists in pool,
+           JVM reuses the same object.
+
+         Memory Location:
+
+         Stack → localReference (reference)
+                         ↓
+         Heap → String Pool → "Hello"
+        */
+        String localReference = "Hello";
+
+
+        /*
+         ============================================================
+         OBJECT CREATION (ArrayList)
+         ============================================================
+
+         localList:
+
+         - Reference variable stored in STACK.
+         - Actual ArrayList object stored in HEAP.
+         - Internal array of ArrayList also in HEAP.
+
+         Memory Location:
+
+         Stack → localList (reference)
+                        ↓
+         Heap → ArrayList Object
+                     ↓
+                 Internal Array
+        */
+        List<String> localList = new ArrayList<>();
+
+
+        /*
+         ============================================================
+         INSTANCE VARIABLE ACCESS
+         ============================================================
+
+         this.instanceVar:
+
+         - Stored inside object instance.
+         - Object lives in HEAP.
+
+         Memory Location:
+
+         Heap → StackHeapExample Object
+                    └── instanceVar = 50
+        */
+
+
+        /*
+         ============================================================
+         METHOD CALL
+         ============================================================
+
+         Calling processData():
+
+         - A NEW STACK FRAME is created.
+         - Parameter 'param' stored in that frame.
+         - Value of localPrimitive is copied.
+
+         Stack Frames now:
+
+         Stack Frame 1 → demonstrateMemory()
+         Stack Frame 2 → processData()
+        */
+        processData(localPrimitive);
+
+    }
+
+    /*
+     ============================================================
+     METHOD EXIT BEHAVIOR
+     ============================================================
+
+     After demonstrateMemory() ends:
+
+     - Stack frame destroyed.
+     - localPrimitive removed.
+     - localReference removed.
+     - localList reference removed.
+
+     Important:
+
+     Objects in HEAP are NOT deleted immediately.
+     They remain until:
+
+     - No references exist
+     - Garbage Collector removes them
+    */
+
+
+
+    private void processData(int param) {
+
+        /*
+         ============================================================
+         NEW STACK FRAME CREATED
+         ============================================================
+
+         param:
+
+         - Primitive value copied from caller.
+         - Stored in new stack frame.
+         - Independent of caller variable.
+
+         Memory Location:
+
+         Stack → param
+        */
+
+
+        /*
+         ============================================================
+         LOCAL VARIABLE IN STACK
+         ============================================================
+
+         result:
+
+         - Stored in current stack frame.
+         - Exists only during method execution.
+
+         Memory Location:
+
+         Stack → result
+        */
+        int result = param * 2;
+
+
+        /*
+         ============================================================
+         METHOD EXIT
+         ============================================================
+
+         After processData() ends:
+
+         - param removed
+         - result removed
+         - Stack frame destroyed
+        */
+    }
+
+
+
+    /*
+     ============================================================
+     MAIN METHOD — OBJECT CREATION (IMPORTANT ADDITION)
+     ============================================================
+
+     This part is essential to fully understand memory behavior.
+    */
+    public static void main(String[] args) {
+
+        /*
+         ============================================================
+         OBJECT CREATION
+         ============================================================
+
+         obj reference:
+
+         - Stored in STACK.
+         - Points to new object.
+
+         new StackHeapExample():
+
+         - Object created in HEAP.
+         - instanceVar stored inside object.
+
+         Memory Layout:
+
+         Stack → obj (reference)
+                     ↓
+         Heap → StackHeapExample Object
+                    └── instanceVar = 50
+        */
+        StackHeapExample obj = new StackHeapExample();
+
+
+        /*
+         ============================================================
+         METHOD CALL FROM MAIN
+         ============================================================
+
+         Calling obj.demonstrateMemory():
+
+         - New stack frame created.
+         - Execution moves into method.
+        */
+        obj.demonstrateMemory();
+
+    }
+
 }
+```
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class StackHeapExample {
+
+    private static int staticVar = 100;    
+    // Stored in Class Area (Method Area), associated with class metadata in Metaspace
+
+    private int instanceVar = 50; // Stored in Heap (inside object instance)
+
+    public void demonstrateMemory() { // Method metadata stored in Metaspace, execution uses Stack
+
+        // === STACK MEMORY ===
+        int localPrimitive = 42; // Primitive value stored directly in Stack
+
+        String localReference = "Hello"; // Reference stored in Stack
+
+        List<String> localList = new ArrayList<>(); // Reference stored in Stack
+
+        // === HEAP MEMORY ===
+        // "Hello" string object → String Pool (inside Heap)
+        // ArrayList object → Heap
+        // this.instanceVar → Heap (inside object instance)
+        processData(localPrimitive); // New stack frame created for method call
+    } // Stack frame destroyed here, local variables removed
+
+
+    private void processData(int param) { // New stack frame created
+        int result = param * 2;// Primitive stored in this stack frame
+    } // Stack frame destroyed, 'param' and 'result' removed
+}
+```
+
+```
+STACK → local variables, parameters
+
+HEAP → objects, instance variables
+
+CLASS AREA → static variables
+
+METASPACE → class metadata
+
+STRING POOL → string literals
+```
+```
+JVM MEMORY — QUICK VIEW
+
+Metaspace
+│
+├── Class Metadata
+├── Method Metadata
+└── Field Metadata
+
+Class Area (Method Area)
+│
+├── static variables
+├── method bytecode
+└── runtime constant pool
+
+Heap
+│
+├── Objects
+│   ├── instance variables
+│   ├── ArrayList objects
+│   └── internal arrays
+│
+└── String Pool
+    └── String literals ("Hello")
+
+Stack (per thread)
+│
+├── Method Calls → Stack Frames
+│   ├── local variables
+│   ├── parameters
+│   └── references
+│
+└── Frame destroyed after method ends
 ```
 ### Stack Memory Visualization
 
