@@ -151,6 +151,16 @@ Feel free to star and fork these repositories if you find them useful!
                                  //   .filter(name -> name != null && name.length() > 3)
                                 //    .filter(name -> name != null && name.toLowerCase().startsWith("r"))
     System.out.println(employeeNames);
+
+
+    Set<String> uniqueEmployeesNames = employeeList.stream()
+                                                .map(Employee::getName)
+                                                .collect(Collectors.toSet());
+
+    Set<String> usingDistinct = employeeList.stream()
+                    .map(Employee::getName)
+                    .distinct()
+                    .collect(Collectors.toSet());
     ```
     > _Output: `[Alice, Bob, Charlie, David, Emma, Frank, Grace]`_
 
@@ -423,8 +433,12 @@ Feel free to star and fork these repositories if you find them useful!
         // 1. Total salary of all employees
         double totalSalary = empList.stream()
             .map(Employee::getSalary)
-            .reduce(0.0, Double::sum);
+            .reduce(0.0, Double::sum);  //  .reduce(0.0, (a, b) -> a + b);
         System.out.println("Total Salary of All Employees: " + totalSalary);
+
+        double totalSalary = empList.stream()
+                                .mapToDouble(Employee::getSalary)
+                                .sum();
 
         // 2. Total salaries grouped by department
         Map<String, Double> totalSalariesByDept = empList.stream()
@@ -452,42 +466,255 @@ Feel free to star and fork these repositories if you find them useful!
 
 * _Sort employees by Name in ascending order._
     ```java
-        // Approach 1: Using Collections.sort() with natural ordering
-        Collections.sort(employees); // Uses compareTo() method
+     import java.util.*;
+     import java.util.stream.Collectors;
+     
+     /*
+      * ============================================================
+      *                EMPLOYEE SORTING - COMPLETE NOTES
+      * ============================================================
+      *
+      * Key Concepts:
+      *
+      * 1. Comparable (compareTo)
+      *    - Defines NATURAL ORDERING
+      *    - Required for:
+      *          Collections.sort(list)
+      *          stream().sorted()
+      *
+      * 2. Comparator
+      *    - Defines CUSTOM ORDERING
+      *    - NOT required to implement Comparable
+      *
+      * ------------------------------------------------------------
+      * RULE:
+      * Comparable  -> Default sorting (inside class)
+      * Comparator  -> Custom sorting (outside class)
+      * ------------------------------------------------------------
+      */
+     
+     class Employee implements Comparable<Employee> {
+     
+         private String name;
+         private double salary;
+     
+         // Constructor
+         // Getters
+     
+         /*
+          * NATURAL ORDERING
+          *
+          * Constraint:
+          * - REQUIRED for 
+          *    - Collections.sort() 
+          *    - stream().sorted()
+          *
+          * Here: Sorting by name (ascending)
+          */
+         @Override
+         public int compareTo(Employee other) {
+             return this.name.compareTo(other.name);
+         }
+     
+         @Override
+         public String toString() {
+             return name + " - " + salary;
+         }
+     }
+     
+     public class EmployeeSortingNotes {
+     
+         public static void main(String[] args) {
+         
+             List<Employee> employees = Arrays.asList(
+                     new Employee("Anil", 50000),
+                     new Employee("Ravi", 70000),
+                     new Employee("Kiran", 60000),
+                     new Employee("Anil", 55000)
+             );
+     
+             /*
+              * ============================================================
+              * Approach 1: Collections.sort()
+              * ============================================================
+              *
+              * Uses:
+              * - compareTo() method (natural ordering)
+              *
+              * Constraint:
+              * - Employee MUST implement Comparable
+              */
+             Collections.sort(employees);
+             // Collections.sort(employees, Collections.reverseOrder());
+             System.out.println("Sorted using Collections.sort(): " + employees);
+     
+     
+             /*
+              * ============================================================
+              * Approach 2: Stream sorted() (Natural Ordering)
+              * ============================================================
+              *
+              * Uses:
+              * - compareTo()
+              *
+              * Constraint:
+              * - Employee MUST implement Comparable
+              */
+             List<Employee> sortedNatural = employees.stream()
+                     .sorted()
+                     .collect(Collectors.toList());
+     
+             System.out.println("Sorted using stream().sorted(): " + sortedNatural);
+     
+     
+             /*
+              * ============================================================
+              * Approach 3: Anonymous Comparator (Salary ASC)
+              * ============================================================
+              *
+              * Uses:
+              * - Custom Comparator
+              *
+              * Constraint:
+              * - NO need for Comparable
+              */
+     
+                     // String (name ASC)
+                     // return e1.getName().compareTo(e2.getName());
+     
+                     // String (name DESC)
+                     // return e2.getName().compareTo(e1.getName());
+             List<Employee> sortedBySalaryAnon = employees.stream()
+                     .sorted(new Comparator<Employee>() {
+                         @Override
+                         public int compare(Employee e1, Employee e2) {
+                             return Double.compare(e1.getSalary(), e2.getSalary());
+                             // return Long.compare(e1.getId(), e2.getId());
+                         }
+                     })
+                     .collect(Collectors.toList());
+     
+             System.out.println("Sorted by salary (Anonymous): " + sortedBySalaryAnon);
+     
+     
+     
+             /*
+              * ============================================================
+              * Approach 4: Lambda Expression (Name DESC)
+              * ============================================================
+              *
+              * Constraint:
+              * - NO need for Comparable
+              */
+             List<Employee> sortedNameDesc = employees.stream()
+                     .sorted((e1, e2) -> e2.getName().compareTo(e1.getName()))
+                     .collect(Collectors.toList());
+     
+             System.out.println("Sorted by name DESC: " + sortedNameDesc);
+     
+     
+             /*
+              * ============================================================
+              * Approach 5: Lambda + Double.compare (BEST PRACTICE)
+              * ============================================================
+              *
+              * Why Double.compare?
+              * - Avoids floating-point precision issues
+              * - Avoids overflow
+              *
+              * Returns:
+              *  -1, 0, 1 (safe comparison)
+              */
+             List<Employee> sortedBySalary = employees.stream()
+                     .sorted((e1, e2) -> Double.compare(e1.getSalary(), e2.getSalary()))
+                     .collect(Collectors.toList());
+     
+             System.out.println("Sorted by salary (Lambda): " + sortedBySalary);
+     
+     
+             /*
+              * ============================================================
+              * Approach 6: Comparator.comparing() (MODERN & CLEAN)
+              * ============================================================
+              *
+              * Recommended in interviews
+              *
+              * Constraint:
+              * - NO need for Comparable
+              */
+             List<Employee> sortedModern = employees.stream()
+                     .sorted(Comparator.comparing(Employee::getSalary))
+                     .collect(Collectors.toList());
+     
+             System.out.println("Sorted using Comparator.comparing(): " + sortedModern);
+     
+     
+             /*
+              * DESCENDING ORDER
+              */
+             List<Employee> sortedDesc = employees.stream()
+                     .sorted(Comparator.comparing(Employee::getSalary).reversed())
+                     .collect(Collectors.toList());
+     
+             System.out.println("Sorted salary DESC: " + sortedDesc);
+     
+     
+             /*
+              * ============================================================
+              * BONUS: MULTI-LEVEL SORTING
+              * ============================================================
+              *
+              * First by salary, then by name
+              */
+             List<Employee> multiSort = employees.stream()
+                     .sorted(Comparator.comparing(Employee::getSalary)
+                             .thenComparing(Employee::getName))
+                     .collect(Collectors.toList());
 
-        // Approach 2: Alternative using Stream API
-        List<Employee> sortedEmployees = employees.stream()
-                    .sorted() // Uses natural ordering (compareTo)
-                //  .sorted(Comparator.comparing(Employee::getName)
+            /*
+            - comparingDouble() → works with primitive double
+            - Avoids boxing overhead
+            - Slightly more performant
+            */
+
+            List<Employee> multiSort = employees.stream()
+                    .sorted(Comparator.comparingDouble(Employee::getSalary)
+                            .thenComparing(Employee::getName))
                     .collect(Collectors.toList());
+     
+             System.out.println("Multi-level sorting: " + multiSort);
 
-        // Approach 3:Sort employees by salary in ascending order using anonymous class.
-        List<Employee> sortedEmployees = employees.stream()
-                .sorted(new Comparator<Employee>() {
-                    @Override
-                    public int compare(Employee e1, Employee e2) {
-                        return Double.compare(e1.getSalary(), e2.getSalary()); // Better than casting
-                    }
-                })
-                .collect(Collectors.toList());
-                
-        // Approach 4: Using lambda expression
-        List<Employee> sorted3 = employees.stream()
-                .sorted((e1, e2) -> e2.getName().compareTo(e1.getName()))
-                .collect(Collectors.toList());
-        /*
-        --------- Approach 5: Sorting using lambda and Double.compare ---------
-        Safer than (e1.getSalary() - e2.getSalary())
-        because it avoids floating-point precision errors
-        and potential overflow when working with large values.
-        Returns:
-         -1 if e1.getSalary() < e2.getSalary()
-          0 if equal
-          1 if e1.getSalary() > e2.getSalary()
-        */
-        List<Employee> sortedBySalary = employees.stream()
-                .sorted((e1, e2) -> Double.compare(e1.getSalary(), e2.getSalary())) // ascending order
-                .collect(Collectors.toList());
+            List<Employee> sortedEmployees = employees.stream()
+                    .sorted(Comparator.comparing(Employee::getCity).reversed() // City descending
+                            .thenComparing(Employee::getName).reversed()) // Then name descending
+                    .collect(Collectors.toList());
+         }
+     }
+     
+     /*
+      * ============================================================
+      * FINAL SUMMARY
+      * ============================================================
+      *
+      * Comparable:
+      *   - Inside class
+      *   - Default sorting
+      *   - Used by Collections.sort() & sorted()
+      *
+      * Comparator:
+      *   - Outside class
+      *   - Custom sorting
+      *   - More flexible
+      *
+      * BEST PRACTICE:
+      *   Use Comparator.comparing()
+      *
+      * INTERVIEW LINE:
+      *   "Comparable defines natural ordering,
+      *    Comparator defines custom ordering."
+      *
+      * ============================================================
+      */
     ```
 
     ```
@@ -497,7 +724,7 @@ Feel free to star and fork these repositories if you find them useful!
     Comparator.comparingLong(Employee::getMobile).reversed()
     Comparator.comparing(Employee::getJoiningDate).reversed()           -  LocalDate
     ```
-* _Sort employees by Name in descending order._
+<!-- * _Sort employees by Name in descending order._
     ```java
         // Approach 1: Using Collections.sort() with reverse order
         Collections.sort(employees, Collections.reverseOrder());
@@ -539,7 +766,7 @@ Feel free to star and fork these repositories if you find them useful!
                         .thenComparing(Employee::getName).reversed()) // Then name descending
                 .collect(Collectors.toList());
 
-    ```
+    ``` -->
 
 * _Traditional approach for implementing the comparator interface method._
     ```java
@@ -558,9 +785,9 @@ Feel free to star and fork these repositories if you find them useful!
     ```java
     System.out.println("\n--- Top 3 Highest Paid Employees ---");
     List<Employee> top3Salaries = employeeList.stream()
-        .sorted(Comparator.comparingDouble(Employee::getSalary).reversed())
-        .limit(3)
-        .collect(Collectors.toList());
+                .sorted(Comparator.comparingDouble(Employee::getSalary).reversed())
+                .limit(3)
+                .collect(Collectors.toList());
     top3Salaries.forEach(System.out::println);
     ```
 
@@ -568,9 +795,9 @@ Feel free to star and fork these repositories if you find them useful!
     ```java
     System.out.println("\n--- Employees After Top 3 Paid ---");
     List<Employee> afterTop3Salaries = employeeList.stream()
-        .sorted(Comparator.comparingDouble(Employee::getSalary).reversed())
-        .skip(3) // Skip the first 3
-        .collect(Collectors.toList());
+                .sorted(Comparator.comparingDouble(Employee::getSalary).reversed())
+                .skip(3) // Skip the first 3
+                .collect(Collectors.toList());
     afterTop3Salaries.forEach(System.out::println);
     ```
 
@@ -578,10 +805,10 @@ Feel free to star and fork these repositories if you find them useful!
     ```java
     System.out.println("\n--- 2nd and 3rd Youngest Employees ---");
     List<Employee> secondAndThirdYoungest = employeeList.stream()
-        .sorted(Comparator.comparingInt(Employee::getAge))
-        .skip(1) // Skip the youngest
-        .limit(2) // Take the next two
-        .collect(Collectors.toList());
+                .sorted(Comparator.comparingInt(Employee::getAge))
+                .skip(1) // Skip the youngest
+                .limit(2) // Take the next two
+                .collect(Collectors.toList());
     secondAndThirdYoungest.forEach(System.out::println);
     ```
     > _Output: Includes Emma (28) and Grace (28)_
@@ -592,40 +819,161 @@ Feel free to star and fork these repositories if you find them useful!
 
 * _Find the Employee with the Maximum Salary._
     ```java
-    Optional<Employee> highestPaidEmployee = employeeList.stream()
-            .collect(Collectors.maxBy(Comparator.comparingDouble(Employee::getSalary)));
-    highestPaidEmployee.ifPresent(System.out::println);
-    // Prints: Optional[Employee{id=2, name='Jane', salary=85000.0}]
+    /*
+     * ============================================================
+     *        EMPLOYEE STATISTICS (MAX / MIN SALARY) - NOTES
+     * ============================================================
+     *
+     * GOAL:
+     *  - Find Employee with MAX salary
+     *  - Find Employee with MIN salary
+     *  - Find only salary (Double)
+     *
+     * IMPORTANT:
+     *  - max() / min() → Direct stream methods (BEST)
+     *  - Collectors.maxBy() / minBy() → Alternative (less preferred)
+     *
+     * RETURN TYPE:
+     *  - Always Optional<T> (to avoid null issues)
+     * ============================================================
+     */
     
-    Optional<Double> maxSalary = employeeList.stream()
-            .map(Employee::getSalary)
-            .collect(Collectors.maxBy(Double::compareTo));
-    // Prints: Optional[85000.0]
+            /*
+             * ============================================================
+             *  1. MAX SALARY EMPLOYEE (BEST APPROACH)
+             * ============================================================
+             *
+             * - Uses stream().max()
+             * - Efficient & readable
+             */
+            Optional<Employee> highestPaid = employeeList.stream()
+                    .max(Comparator.comparingDouble(Employee::getSalary));
+    
+            highestPaid.ifPresent(System.out::println);
+            // Output: Employee{id=2, name='Jane', salary=85000.0}
+    
+    
+            /*
+             * ============================================================
+             *  2. MAX SALARY EMPLOYEE (Collectors - ALTERNATIVE)
+             * ============================================================
+             *
+             * - Same result, but slightly verbose
+             */
+            Optional<Employee> highestPaidAlt = employeeList.stream()
+                    .collect(Collectors.maxBy(
+                            Comparator.comparingDouble(Employee::getSalary)));
+    
+            highestPaidAlt.ifPresent(System.out::println);
+    
+    
+            /*
+             * ============================================================
+             *  3. MAX SALARY VALUE ONLY (Double)
+             * ============================================================
+             *
+             * - First map → extract salary
+             * - Then apply max()
+             */
+            Optional<Double> maxSalary = employeeList.stream()
+                    .map(Employee::getSalary)
+                    .max(Double::compare);
+    
+            maxSalary.ifPresent(System.out::println);
+            // Output: 85000.0
+    
+    
+            /*
+             * ============================================================
+             *  4. MIN SALARY EMPLOYEE
+             * ============================================================
+             *
+             * - Uses stream().min()
+             */
+            Optional<Employee> lowestPaid = employeeList.stream()
+                    .min(Comparator.comparingDouble(Employee::getSalary));
+    
+            lowestPaid.ifPresent(System.out::println);
+            // Output: Employee with lowest salary
+    
+    
+            /*
+             * ============================================================
+             *  5. MIN SALARY (Collectors - ALTERNATIVE)
+             * ============================================================
+             */
+            Optional<Employee> lowestPaidAlt = employeeList.stream()
+                    .collect(Collectors.minBy(
+                            Comparator.comparingDouble(Employee::getSalary)));
+    
+            lowestPaidAlt.ifPresent(System.out::println);
+    
+    
+            /*
+             * ============================================================
+             *  IMPORTANT NOTES
+             * ============================================================
+             *
+             * 1. Optional is used because:
+             *    - Stream may be empty
+             *
+             * 2. Prefer:
+             *      max() / min()
+             *    over:
+             *      Collectors.maxBy() / minBy()
+             *
+             * 3. comparingDouble():
+             *    - Avoids boxing (double → Double)
+             *    - Better performance
+             *
+             * 4. To get value directly (unsafe if empty):
+             */
+            // Employee emp = highestPaid.get(); // ⚠️ may throw exception
+    
+    
+            /*
+             * ============================================================
+             *  BONUS VARIATIONS
+             * ============================================================
+             */
+    
+            // Get only employee name with max salary
+            Optional<String> name = employeeList.stream()
+                    .max(Comparator.comparingDouble(Employee::getSalary))
+                    .map(e -> e.name);
+    
+            name.ifPresent(System.out::println);
+    
+    
+            // Default value if empty
+            Employee defaultEmp = employeeList.stream()
+                    .max(Comparator.comparingDouble(Employee::getSalary))
+                    .orElse(new Employee(0, "Default", 0));
+    
+            System.out.println(defaultEmp);
+        }
+    }
     
     /*
-        Optional<T> max(Comparator<? super T> comparator)
-        - Stream<T> is in the package: java.util.stream
-    */
-    Optional<Employee> highestPaidEmployee = employeeList.stream()
-            .max(Comparator.comparingDouble(Employee::getSalary));
-    // Prints: Optional[Employee{id=2, name='Jane', salary=85000.0}]
-    
-    Optional<Double> maxSalary = employeeList.stream()
-            .map(Employee::getSalary)
-            .max(Double::compareTo);
-    // Prints: Optional[85000.0]
+     * ============================================================
+     * FINAL QUICK SUMMARY
+     * ============================================================
+     *
+     * Find MAX object:
+     *   stream().max(Comparator)
+     *
+     * Find MIN object:
+     *   stream().min(Comparator)
+     *
+     * Extract field:
+     *   map() → then max()/min()
+     *
+     * BEST PRACTICE:
+     *   comparingDouble() for double
+     *
+     * ============================================================
+     */
     ```
-    > _Output: Emma's record_
-
-* _Find the Employee with the Minimum Salary._
-    ```java
-    System.out.println("\n--- Employee with Minimum Salary ---");
-    Optional<Employee> lowestPaidEmployee = employeeList.stream()
-        .collect(Collectors.minBy(Comparator.comparingDouble(Employee::getSalary)));
-        // Alternatively: .min(Comparator.comparingDouble(Employee::getSalary));
-    lowestPaidEmployee.ifPresent(System.out::println);
-    ```
-    > _Output: Alice's record_
 
 * _Calculate Summary Statistics for Employee Ages (Count, Sum, Min, Average, Max)._
     ```java
@@ -633,9 +981,9 @@ Feel free to star and fork these repositories if you find them useful!
 
     System.out.println("\n--- Summary Statistics for Employee Ages ---");
     IntSummaryStatistics ageStats = employeeList.stream()
-        .mapToInt(Employee::getAge) // Convert to IntStream
-    //  .mapToDouble(Employee::getSalary) // Convert to DoubleStream - for the salaryStats
-        .summaryStatistics(); // Calculate stats
+                        .mapToInt(Employee::getAge) // Convert to IntStream
+                    //  .mapToDouble(Employee::getSalary) // Convert to DoubleStream - for the salaryStats
+                        .summaryStatistics(); // Calculate stats
 
     System.out.println("Min: " + ageStats.getMin());
     System.out.println("Max: " + ageStats.getMax());
@@ -652,18 +1000,26 @@ Feel free to star and fork these repositories if you find them useful!
 
 * _Find the Highest Salary in each Department._
     ```java
-    import java.util.function.BinaryOperator;
-
     System.out.println("\n--- Highest Salary per Department ---");
-    Map<String, Optional<Employee>> highestSalaryByDept = employeeList.stream()
-        .collect(Collectors.groupingBy(
-            Employee::getDeptName,
-            Collectors.reducing(BinaryOperator.maxBy(Comparator.comparingDouble(Employee::getSalary)))
-        ));
-
+    
+    Map<String, Optional<Employee>> highestSalaryByDept =
+        employeeList.stream()
+            .collect(Collectors.groupingBy(
+                Employee::getDeptName,
+                Collectors.maxBy(
+                    Comparator.comparingDouble(Employee::getSalary)
+                )
+            ));
+    
     highestSalaryByDept.forEach((dept, empOpt) -> {
-        System.out.print("Dept: " + dept + ", Highest Paid: ");
-        empOpt.ifPresent(emp -> System.out.println(emp.getName() + " (" + emp.getSalary() + ")"));
+        empOpt.ifPresent(emp ->
+            System.out.println(
+                "Dept: " + dept +
+                ", Highest Paid: " +
+                emp.getName() +
+                " (" + emp.getSalary() + ")"
+            )
+        );
     });
     ```
 
