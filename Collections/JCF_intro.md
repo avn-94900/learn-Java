@@ -20,20 +20,20 @@
 ---
 
 ## Table 2: Internal Structure Details
-| Collection | Internal Structure | Default Capacity | Growth Strategy | Load Factor | Collision Handling | Memory Structure |
-|------------|-------------------|------------------|-----------------|-------------|-------------------|------------------|
-| **ArrayList** | Dynamic Array | 10 | 50% increase | - | - | Object[] array |
-| **LinkedList** | Doubly Linked List | - | - | - | - | Node objects with prev/next |
-| **Vector** | Dynamic Array | 10 | 100% increase | - | - | Object[] array |
-| **HashSet** | Hash Table | 16 | Double when load > 0.75 | 0.75 | Chaining (list/tree) | HashMap internally |
-| **LinkedHashSet** | Hash Table + Linked List | 16 | Double when load > 0.75 | 0.75 | Chaining (list/tree) | HashMap + LinkedList internally |
-| **TreeSet** | Red-Black Tree | - | - | - | - | TreeMap internally |
-| **HashMap** | Hash Table | 16 | Double when load > 0.75 | 0.75 | Chaining (list/tree) | Node[] buckets |
-| **LinkedHashMap** | Hash Table + Linked List | 16 | Double when load > 0.75 | 0.75 | Chaining (list/tree) | HashMap + LinkedList nodes |
-| **TreeMap** | Red-Black Tree | - | - | - | - | Red-Black tree nodes |
-| **Hashtable** | Hash Table | 11 | 2 * old + 1 | 0.75 | Chaining (list) | Entry[] buckets |
-| **ArrayDeque** | Circular Array | 16 | Double when full | - | - | Circular Object[] array |
-| **PriorityQueue** | Binary Heap | 11 | 50%/100% increase | - | - | Object[] heap |
+| Collection        | **Internal Structure / Memory Layout**                  | Default Capacity | Growth Strategy         | **Growth Action (What happens internally)**                            | Load Factor | Collision Handling             |
+| ----------------- | ------------------------------------------------------- | ---------------- | ----------------------- | ---------------------------------------------------------------------- | ----------- | ------------------------------ |
+| **ArrayList**     | Dynamic array (`Object[]`)                              | 10               | ~50% increase           | New array created → `newCapacity = old + (old >> 1)` → elements copied | -           | -                              |
+| **LinkedList**    | Doubly linked list (`Node(prev,item,next)`)             | -                | -                       | New node created → linked with prev/next                               | -           | -                              |
+| **Vector**        | Dynamic array (`Object[]`)                              | 10               | 100% increase (default) | New array created → usually `newCapacity = old * 2` → elements copied  | -           | -                              |
+| **HashSet**       | Hash table using **HashMap** (`Node[] buckets`)         | 16               | Double when load > 0.75 | New bucket array created → all elements rehashed                       | 0.75        | Chaining (List → Tree after 8) |
+| **LinkedHashSet** | Hash table + doubly linked list (**LinkedHashMap**)     | 16               | Double when load > 0.75 | New bucket array → rehash → maintain insertion order                   | 0.75        | Chaining (List → Tree)         |
+| **TreeSet**       | Red-Black Tree (via **TreeMap**)                        | -                | -                       | New node inserted → tree rotations rebalance                           | -           | -                              |
+| **HashMap**       | Hash table (`Node[] buckets`)                           | 16               | Double when load > 0.75 | New bucket array → entries rehashed into new buckets                   | 0.75        | Chaining (List → Tree after 8) |
+| **LinkedHashMap** | Hash table + doubly linked list (`LinkedHashMap.Entry`) | 16               | Double when load > 0.75 | New bucket array → rehash → maintain insertion/access order            | 0.75        | Chaining (List → Tree)         |
+| **TreeMap**       | Red-Black Tree (`TreeNode`)                             | -                | -                       | Insert node → perform rotations to maintain balance                    | -           | -                              |
+| **Hashtable**     | Hash table (`Entry[] buckets`)                          | 11               | `2 * old + 1`           | New bucket array created → elements rehashed                           | 0.75        | Chaining (List only)           |
+| **ArrayDeque**    | Circular dynamic array (`Object[]`)                     | 16               | Double when full        | New circular array created → elements copied in order                  | -           | -                              |
+| **PriorityQueue** | Binary heap (`Object[] heap`)                           | 11               | ~1.5× increase          | New heap array created → elements copied → heap rebuilt                | -           | -                              |
 
 
 ## Table 3: Performance Comparison (Read/Insert/Delete Operations)

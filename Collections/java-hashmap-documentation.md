@@ -29,7 +29,7 @@
 | 17 | [How LinkedHashMap Maintains Insertion Order](#how-linkedhashmap-maintains-insertion-order) |
 | 18 | [Difference between HashMap and IdentityHashMap](#difference-between-hashmap-and-identityhashmap) |
 | 19 | [Difference between HashMap and WeakHashMap](#difference-between-hashmap-and-weakhashmap) |
-
+<!-- 
 ## How HashMap works in Java
 
 HashMap in Java is a hash table-based implementation of the Map interface that stores key-value pairs. Here's how it works internally:
@@ -383,7 +383,7 @@ String value = map.get(key); // Will likely return null!
 | Field Selection | Choose fields that provide good uniqueness |
 | Object Size | Smaller keys may improve memory usage |
 
-[Back to Top](#table-of-contents)
+[Back to Top](#table-of-contents) -->
 
 ## What is LinkedHashMap in Java
 
@@ -426,13 +426,13 @@ for (Map.Entry<String, Integer> entry : insertionOrderMap.entrySet()) {
 // orange: 30
 
 // Creating an access-order LinkedHashMap (LRU cache-like behavior)
-LinkedHashMap<String, Integer> accessOrderMap = new LinkedHashMap<>(16, 0.75f, true);
+LinkedHashMap<String, Integer> accessOrderMap = new LinkedHashMap<>(16, 0.75f, true); // 3rd param accessOrder = true
 accessOrderMap.put("apple", 10);
 accessOrderMap.put("banana", 20);
-accessOrderMap.put("orange", 30);
+accessOrderMap.put("orange", 30);  // [apple → banana → orange]
 
 // Accessing entries
-accessOrderMap.get("apple");  // Moves "apple" to the end of the linked list
+accessOrderMap.get("apple");  // [banana → orange → apple]
 accessOrderMap.get("orange"); // Moves "orange" to the end of the linked list
 
 // Iterating shows access order (least recently accessed first)
@@ -515,67 +515,72 @@ System.out.println(cache); // {C=Value C, A=Value A, D=Value D} (B was removed)
 * **Basic usage example**:
 
   ```java
-  import java.util.WeakHashMap;
   import java.util.Map;
-
+  import java.util.WeakHashMap;
+  
   public class WeakHashMapExample {
-      public static void main(String[] args) {
-          // Create a WeakHashMap
-          Map<Key, String> weakMap = new WeakHashMap<>();
-          
-          // Create a key that will persist
-          Key persistentKey = new Key("Persistent");
-          
-          // Create a block to limit scope of tempKey
-          {
-              // This key will be eligible for GC after this block
-              Key tempKey = new Key("Temporary");
-              
-              // Add entries to the map
-              weakMap.put(persistentKey, "I will stay");
-              weakMap.put(tempKey, "I will disappear");
-              
-              System.out.println("Map size: " + weakMap.size()); // Output: 2
-              System.out.println("Map contents: " + weakMap);
-          }
-          
-          // Suggest garbage collection (not guaranteed to run)
-          System.gc();
-          System.runFinalization();
-          
-          // Check map after GC
-          System.out.println("Map size after GC: " + weakMap.size()); // May be 1
-          System.out.println("Map contents after GC: " + weakMap);
-      }
+  
+      public static void main(String[] args) throws Exception {
       
+          Map<Key, String> weakMap = new WeakHashMap<>();
+  
+          Key persistentKey = new Key("Persistent");
+  
+          // Create temp key
+          Key tempKey = new Key("Temporary");
+  
+          weakMap.put(persistentKey, "I will stay");
+          weakMap.put(tempKey, "I will disappear");
+  
+          System.out.println("Before removing reference:");
+          System.out.println("Map size: " + weakMap.size());
+  
+          // Remove strong reference manually
+          tempKey = null;
+  
+          // Try multiple GC cycles
+          for (int i = 0; i < 5; i++) {
+              System.gc();
+              Thread.sleep(100);
+          }
+  
+          // Trigger cleanup
+          weakMap.size();
+  
+          System.out.println("\nAfter GC attempt:");
+          System.out.println("Map size: " + weakMap.size());
+          System.out.println("Map contents: " + weakMap);
+      }
+  
       static class Key {
+      
           private String id;
-          
+  
           public Key(String id) {
               this.id = id;
           }
-          
+  
           @Override
           public String toString() {
               return "Key[" + id + "]";
           }
-          
-          @Override
-          public boolean equals(Object obj) {
-              if (this == obj) return true;
-              if (obj == null || getClass() != obj.getClass()) return false;
-              Key key = (Key) obj;
-              return id.equals(key.id);
-          }
-          
+  
           @Override
           public int hashCode() {
               return id.hashCode();
           }
-          
+  
           @Override
-          protected void finalize() {
-              System.out.println("Finalizing Key: " + id);
+          public boolean equals(Object obj) {
+          
+              if (this == obj) return true;
+  
+              if (!(obj instanceof Key))
+                  return false;
+  
+              Key other = (Key) obj;
+  
+              return id.equals(other.id);
           }
       }
   }
