@@ -14,20 +14,12 @@
 
 ## What is JVM?
 
-**JVM (Java Virtual Machine)** is an abstract computing machine that enables the "Write Once, Run Anywhere" principle by converting platform-independent bytecode into machine-specific instructions.
+**JVM (Java Virtual Machine)** is an abstract computing machine that enables the "Write Once, Run Anywhere" principle by converting platform-independent bytecode into platform-dependent machine code.
 
 **Key Points:**
 - Not a physical machine, but a specification + implementation
 - Provides runtime environment for Java bytecode
 - Acts as intermediary between code and OS/CPU
-
----
-
-## JVM Architecture Components
-
-![JVM Architecture Diagram](./ss-jvm-architecture.png)
-
-
 ---
 
 ## Java Program Execution Flow
@@ -43,12 +35,75 @@ MyProgram.java (source code)
     ↓ [OS + CPU]
     Program Execution
 ```
+<!-- C:\Users\Dell\Documents\anil-vn\learn-Java\JVM-internals\JDK_JRE_JVM.jpg -->
+![Jvm](./JDK_JRE_JVM.jpg)
+ 
+ | Feature                    | **JDK**                                               | **JRE**                                   | **JVM**                                                    |
+| -------------------------- | ----------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------- |
+| **Full Form**              | Java Development Kit                                  | Java Runtime Environment                  | Java Virtual Machine                                       |
+| **Meaning**                | JDK is used to develop Java applications and applets. | JRE is used to run Java applications.     | JVM provides runtime environment to execute Java bytecode. |
+| **Purpose**                | Development of Java programs.                         | Running Java programs.                    | Executing compiled Java code.                              |
+| **Platform Dependency**    | Platform-dependent                                    | Platform-dependent                        | Platform-independent (bytecode runs anywhere with JVM).    |
+| **Implementation Formula** | **JDK = JRE + Development Tools**                     | **JRE = JVM + Libraries**                 | JVM is part of JRE.                                        |
+| **Contains**               | JRE + tools like compiler, debugger, archiver.        | JVM + class libraries + supporting files. | Runtime execution engine only.                             |
+| **Tools Included**         | Yes (javac, jar, javadoc, debugger etc.)              | No development tools.                     | No development tools.                                      |
+| **Main Role**              | Writing and building Java programs.                   | Running Java programs.                    | Converting bytecode into machine code.                     |
+| **Used By**                | Developers                                            | Users and developers                      | Used internally by JRE                                     |
+
+---
+<br/>
+<br/>
+
+## Key Terminologies
+
+| Term | Definition | Category |
+|------|------------|----------|
+| Source Code | Human-readable high-level code (.java file) | Input |
+| Bytecode | Platform-independent intermediate code (.class file) | Intermediate |
+| Machine Code | CPU-specific binary instructions | Output |
+| High-Level Language | Languages closer to human language (Java, Python) | Language Type |
+| Low-Level Language | Languages closer to hardware (Assembly, Machine Code) | Language Type |
+| Hotspot | Frequently executed code sections | Performance |
+| JNI | Java Native Interface for C/C++ integration | Interoperability |
+
+
+
+
+## Life Cycle of a Java Program
+
+| Phase | Input | Process | Output | Description |
+|-------|-------|---------|---------|-------------|
+| 1. Write | Human logic | Developer coding | .java file | High-level, human-readable source code |
+| 2. Compile | .java file | javac compiler | .class file | Platform-independent intermediate bytecode |
+| 3. Load & Verify | .class file | Class Loader + Verifier | Verified classes in memory | Security and validity checks |
+| 4. Execute | Bytecode | Interpreter/JIT | Machine code | Platform-dependent low-level instructions |
+| 5. Runtime Management | Running program | Memory allocation, GC | Optimized execution | Memory management and optimization |
+| 6. Termination | Program end | JVM shutdown | Clean state | Memory cleanup and resource release |
+
+---
+
+## JVM Architecture Components
+
+![JVM Architecture Diagram](./ss-jvm-architecture.png)
+
+
+
+
 
 ---
 
 ## Class Loader Subsystem
 
-### Hierarchy & Delegation Model
+
+
+
+
+#### 1. **Loading**
+```
+Read .class file → Create Class object → Store in Method Area
+```
+### Three Phases of Class Loading
+#### Hierarchy & Delegation Model
 
 | Class Loader | Parent | Loads From | Examples |
 |---|---|---|---|
@@ -58,18 +113,13 @@ MyProgram.java (source code)
 
 **Delegation Flow:** Application → Extension → Bootstrap (ask parent first, load if not found)
 
-### Three Phases of Class Loading
-
-#### 1. **Loading**
-```
-Read .class file → Create Class object → Store in Method Area
-```
+<br/>
 
 #### 2. **Linking** (3 sub-phases)
 
 | Sub-phase | Purpose | Example |
 |---|---|---|
-| **Verification** | Ensure bytecode validity & security | Check for stack overflow/underflow |
+| **Verification** | Ensure bytecode validity & security(check if altered or not) | Check for stack overflow/underflow |
 | **Preparation** | Allocate memory for static variables | `static int x;` gets default value `0` |
 | **Resolution** | Convert symbolic references → direct references | `System.out.println()` → memory address |
 
