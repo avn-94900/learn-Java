@@ -36,7 +36,7 @@ MyProgram.java (source code)
     Program Execution
 ```
 <!-- C:\Users\Dell\Documents\anil-vn\learn-Java\JVM-internals\JDK_JRE_JVM.jpg -->
-![Jvm](./JDK_JRE_JVM.jpg)
+![Jvm](./images/JDK_JRE_JVM.jpg)
  
  | Feature                    | **JDK**                                               | **JRE**                                   | **JVM**                                                    |
 | -------------------------- | ----------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------- |
@@ -84,7 +84,7 @@ MyProgram.java (source code)
 
 ## JVM Architecture Components
 
-![JVM Architecture Diagram](./ss-jvm-architecture.png)
+![JVM Architecture Diagram](./images/ss-jvm-architecture.png)
 
 
 
