@@ -1,12 +1,36 @@
 # Java Locks — Part 2: ReadWriteLock, StampedLock, Semaphore
 
+
+## Table of Contents
+
+- [1. ReadWriteLock](#1-readwritelock)
+  - [1.1 Rules](#11-rules)
+  - [1.2 Lock Types Comparison](#12-lock-types-comparison)
+  - [1.3 API](#13-api)
+  - [1.4 Full Example — Cache](#14-full-example--cache)
+- [2. StampedLock](#2-stampedlock)
+  - [2.1 Three Modes](#21-three-modes)
+  - [2.2 API](#22-api)
+  - [2.3 Optimistic Read Pattern](#23-optimistic-read-pattern)
+  - [2.4 Full Example — Point](#24-full-example--point)
+  - [2.5 Caveats](#25-caveats)
+- [3. Semaphore](#3-semaphore)
+  - [3.1 Basics](#31-basics)
+  - [3.2 API](#32-api)
+  - [3.3 Full Example — Connection Pool](#33-full-example--connection-pool)
+- [4. Lock Comparison](#4-lock-comparison)
+  - [4.1 Comparison Table](#41-comparison-table)
+  - [4.2 When to Use Which](#42-when-to-use-which)
+- [5. Best Practices](#5-best-practices)
+
 ---
 
-## ReadWriteLock
+## 1. ReadWriteLock
 
-Splits locking into two separate locks — a **shared read lock** and an **exclusive write lock** — maximising throughput for read-heavy workloads.
+Splits locking into two separate locks — a shared read lock and an exclusive write lock — maximising throughput for read-heavy workloads.
 
-**Rules:**
+### 1.1 Rules
+
 - Multiple threads can hold the read lock simultaneously, as long as no writer holds the write lock.
 - Only one thread can hold the write lock. While held, no readers are allowed.
 
@@ -30,7 +54,7 @@ try {
 }
 ```
 
-### Shared vs Exclusive vs Optimistic — Comparison
+### 1.2 Lock Types Comparison
 
 | Lock Type | Multiple Threads? | Allows Write? | Used Via |
 |---|---|---|---|
@@ -38,16 +62,18 @@ try {
 | Exclusive (write) | No | Yes | `ReadWriteLock.writeLock()` |
 | Optimistic read | Yes (no lock taken) | Yes, if stamp still valid | `StampedLock.tryOptimisticRead()` |
 
-### ReadWriteLock API
+> **Note:** `ReadWriteLock` / `ReentrantReadWriteLock` does not support optimistic read. That feature belongs to `StampedLock`.
 
-```java
+### 1.3 API
+
+```
 readLock()    // returns the shared read lock
 writeLock()   // returns the exclusive write lock
 ```
 
 Both returned locks support the full `Lock` interface: `lock()`, `unlock()`, `tryLock()`, `tryLock(timeout, unit)`, `lockInterruptibly()`.
 
-### ReadWriteLock Cache — Full Example
+### 1.4 Full Example — Cache
 
 ```java
 import java.util.*;
@@ -78,7 +104,7 @@ public class CacheExample {
 }
 
 class Cache {
-    private final Map<String, String> map  = new HashMap<>();
+    private final Map<String, String> map = new HashMap<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public String get(String key) {
@@ -112,11 +138,11 @@ class Cache {
 
 ---
 
-## StampedLock (Java 8+)
+## 2. StampedLock
 
-`StampedLock` extends the read/write model with a third mode — **optimistic read** — that avoids acquiring any lock at all. Every operation returns a numeric **stamp** used to release or validate the lock.
+Available since **Java 8**. Extends the read/write model with a third mode — **optimistic read** — that avoids acquiring any lock at all. Every operation returns a numeric **stamp** used to release or validate the lock.
 
-### Three Modes
+### 2.1 Three Modes
 
 | Mode | Method | Blocks? | Notes |
 |---|---|---|---|
@@ -124,7 +150,7 @@ class Cache {
 | Read | `readLock()` | Yes | Shared; blocks writers |
 | Optimistic read | `tryOptimisticRead()` | No | Returns stamp; validate before using data |
 
-### StampedLock API
+### 2.2 API
 
 ```java
 long writeLock()              // acquire write lock, returns stamp
@@ -135,7 +161,7 @@ unlockWrite(long stamp)       // release write lock
 unlockRead(long stamp)        // release read lock
 ```
 
-### Optimistic Read Pattern
+### 2.3 Optimistic Read Pattern
 
 ```java
 StampedLock lock = new StampedLock();
@@ -144,7 +170,7 @@ long stamp = lock.tryOptimisticRead(); // no lock acquired
 double x = this.x;
 double y = this.y;
 
-if (!lock.validate(stamp)) {          // a writer intervened — fall back
+if (!lock.validate(stamp)) {           // a writer intervened — fall back
     stamp = lock.readLock();
     try {
         x = this.x;
@@ -156,9 +182,9 @@ if (!lock.validate(stamp)) {          // a writer intervened — fall back
 // use x, y safely
 ```
 
-**Why it is faster:** under low write contention, optimistic reads never block. The validation check is a single compare.
+> **Why it is faster:** Under low write contention, optimistic reads never block. The validation check is a single compare.
 
-### StampedLock — Full Example (Point)
+### 2.4 Full Example — Point
 
 ```java
 import java.util.concurrent.locks.StampedLock;
@@ -220,17 +246,21 @@ class Point {
 }
 ```
 
-### StampedLock Caveats
+### 2.5 Caveats
 
-- `StampedLock` is **not reentrant**. Calling `readLock()` from a thread already holding a write lock will deadlock.
-- There is no `Condition` support.
-- Do not use `StampedLock` where `ReentrantReadWriteLock` features (reentrancy, conditions) are required.
+| Caveat | Detail |
+|---|---|
+| Not reentrant | Calling `readLock()` from a thread already holding the write lock will deadlock |
+| No Condition support | Cannot use `await()` / `signal()` with StampedLock |
+| Do not use when | Reentrancy or Conditions are required — use `ReentrantReadWriteLock` instead |
 
 ---
 
-## Semaphore
+## 3. Semaphore
 
-A `Semaphore` maintains a set of **permits**. `acquire()` takes a permit (blocking if none available). `release()` returns a permit. Used to limit concurrent access to a resource — not to establish mutual exclusion between threads competing for the same data.
+A **Semaphore** maintains a set of permits. `acquire()` takes a permit (blocking if none available). `release()` returns a permit. Used to **limit concurrent access** to a resource, not to establish mutual exclusion between threads competing for the same data.
+
+### 3.1 Basics
 
 ```java
 Semaphore semaphore = new Semaphore(3); // 3 concurrent permits
@@ -243,22 +273,22 @@ try {
 }
 ```
 
-### Semaphore API
+### 3.2 API
 
 ```java
-new Semaphore(int permits)            // unfair
-new Semaphore(int permits, boolean fair)
+new Semaphore(int permits)                    // unfair
+new Semaphore(int permits, boolean fair)      // fair ordering
 
-acquire()                             // acquire 1 permit, blocking
-acquire(int permits)                  // acquire N permits, blocking
-tryAcquire()                          // non-blocking, returns boolean
-tryAcquire(long timeout, TimeUnit u)  // timed attempt
-release()                             // release 1 permit
-release(int permits)                  // release N permits
-availablePermits()                    // current permit count
+acquire()                                     // acquire 1 permit, blocking
+acquire(int permits)                          // acquire N permits, blocking
+tryAcquire()                                  // non-blocking, returns boolean
+tryAcquire(long timeout, TimeUnit u)          // timed attempt
+release()                                     // release 1 permit
+release(int permits)                          // release N permits
+availablePermits()                            // current permit count
 ```
 
-### Semaphore Connection Pool — Full Example
+### 3.3 Full Example — Connection Pool
 
 ```java
 import java.util.concurrent.Semaphore;
@@ -287,9 +317,9 @@ class ConnectionPool {
     private final boolean[] used;
 
     public ConnectionPool(int size) {
-        available    = new Semaphore(size, true); // fair
-        connections  = new Connection[size];
-        used         = new boolean[size];
+        available   = new Semaphore(size, true); // fair
+        connections = new Connection[size];
+        used        = new boolean[size];
         for (int i = 0; i < size; i++) {
             connections[i] = new Connection("Connection-" + i);
         }
@@ -336,42 +366,46 @@ class Connection {
 
 ---
 
-## Lock Comparison Table
+## 4. Lock Comparison
+
+### 4.1 Comparison Table
 
 | Lock | Fairness | Interruptible | Timeout | Conditions | Performance |
 |---|---|---|---|---|---|
-| `synchronized` | No | No | No | One (wait/notify) | Good |
+| `synchronized` | No | No | No | One (`wait`/`notify`) | Good |
 | `ReentrantLock` | Optional | Yes | Yes | Multiple | Good |
 | `ReadWriteLock` | Optional | Yes | Yes | Multiple | Better for reads |
 | `StampedLock` | No | Yes | Yes | None | Best (optimistic) |
 | `Semaphore` | Optional | Yes | Yes | None | Good |
 
----
-
-## When to Use Which
+### 4.2 When to Use Which
 
 | Scenario | Choice | Reason |
 |---|---|---|
 | Simple object-level thread safety | `synchronized` | Built-in, zero boilerplate |
-| Interruptibility or timeout needed | `ReentrantLock` | Full control |
+| Interruptibility or timeout needed | `ReentrantLock` | Full control over locking |
 | Many reads, few writes | `ReadWriteLock` | Shared read lock improves throughput |
 | Highest read performance, low write contention | `StampedLock` | Optimistic reads avoid all locking |
-| Limit concurrent access to a pool / rate-limit | `Semaphore` | Permit-based access control |
+| Limit concurrent access to a pool or rate-limit | `Semaphore` | Permit-based access control |
 | Thread communication without a monitor | `Condition` | Signal/await on explicit lock |
 
 ---
 
-## Best Practices
+## 5. Best Practices
 
-Always unlock in a `finally` block — without it, an exception leaves the lock permanently held:
+### 5.1 Always Unlock in a Finally Block
+
+Without a `finally` block, an exception leaves the lock permanently held.
 
 ```java
 lock.lock();
 try {
     // critical section
 } finally {
-    lock.unlock(); // executes even if exception thrown
+    lock.unlock(); // executes even if exception is thrown
 }
 ```
 
-Never mix `synchronized` and explicit `Lock` on the same shared data — they are independent mechanisms and will not coordinate with each other.
+### 5.2 Never Mix synchronized and Explicit Locks
+
+> **Warning:** Never mix `synchronized` and explicit `Lock` on the same shared data. They are independent mechanisms and will not coordinate with each other.
