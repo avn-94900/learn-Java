@@ -34,6 +34,7 @@
 ---
 
 ## Runnable vs Callable
+- Both are functional interfaces in Java.
 
 | | `Runnable` | `Callable<V>` |
 |---|---|---|

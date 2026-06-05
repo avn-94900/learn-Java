@@ -1,6 +1,6 @@
 # Java Locks — Part 1: synchronized and ReentrantLock
 
----
+
 
 ## The Problem with synchronized
 
@@ -96,18 +96,217 @@ The lock is `static` — shared across all instances regardless of how many obje
 
 ## synchronized vs ReentrantLock
 
-| Aspect | `synchronized` | `ReentrantLock` |
-|---|---|---|
-| Control | Automatic | Manual |
-| Interruptible | No | Yes (`lockInterruptibly()`) |
-| Timeout | No | Yes (`tryLock(long, TimeUnit)`) |
-| Fairness | No | Yes (`new ReentrantLock(true)`) |
-| Multiple conditions | One (wait/notify) | Many (`newCondition()`) |
-| Try-acquire | No | Yes (`tryLock()`) |
-| Flexibility | Low | High |
+| Aspect              | synchronized      | ReentrantLock           | Simple Meaning                                                                                             |
+| ------------------- | ----------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Control             | Automatic         | Manual                  | JVM handles synchronized lock automatically. In ReentrantLock, developer must unlock manually.             |
+| Interruptible       | No                | Yes                     | Waiting thread cannot be interrupted in synchronized. ReentrantLock supports `lockInterruptibly()`.        |
+| Timeout             | No                | Yes                     | synchronized waits forever. ReentrantLock can wait for limited time using `tryLock()`.                     |
+| Fairness            | No                | Yes                     | synchronized gives no guarantee which thread gets lock next. ReentrantLock can give lock in waiting order. |
+| Multiple conditions | One (wait/notify) | Many (`newCondition()`) | synchronized has one monitor queue. ReentrantLock supports multiple condition queues.                      |
+| Try-acquire         | No                | Yes                     | synchronized cannot check lock availability. ReentrantLock can try without waiting.                        |
+| Flexibility         | Low               | High                    | ReentrantLock provides advanced thread control features.                                                   |
+
 
 **The golden rule:** the lock protects **data**, not methods. All threads must use the **same lock instance** to establish mutual exclusion.
 
+---
+## 1. synchronized Example
+
+### Counter.java
+
+```java id="j6q0ga"
+public class Counter {
+
+    private int count = 0;
+
+    // only one thread can enter at a time
+    public synchronized void increment() {
+        count++;
+    }
+
+    public int getCount() {
+        return count;
+    }
+}
+```
+
+---
+
+## 2. ReentrantLock Basic Example
+
+### Counter.java
+
+```java id="c6wgo4"
+import java.util.concurrent.locks.ReentrantLock;
+
+public class Counter {
+
+    private int count = 0;
+
+    private ReentrantLock lock = new ReentrantLock();
+
+    public void increment() {
+
+        // manually acquire lock
+        lock.lock();
+
+        try {
+            count++;
+        } finally {
+
+            // must release lock manually
+            lock.unlock();
+        }
+    }
+
+    public int getCount() {
+        return count;
+    }
+}
+```
+
+---
+
+## 3. tryLock() Example
+
+### TryLockExample.java
+
+```java id="g0dqg0"
+import java.util.concurrent.locks.ReentrantLock;
+
+public class TryLockExample {
+
+    private ReentrantLock lock = new ReentrantLock();
+
+    public void test() {
+
+        // tries to get lock immediately
+        if (lock.tryLock()) {
+
+            try {
+                System.out.println("Lock acquired");
+            } finally {
+                lock.unlock();
+            }
+
+        } else {
+
+            // no waiting
+            System.out.println("Could not acquire lock");
+        }
+    }
+}
+```
+
+---
+
+## 4. lockInterruptibly() Example
+
+### InterruptExample.java
+
+```java id="h92itj"
+import java.util.concurrent.locks.ReentrantLock;
+
+public class InterruptExample {
+
+    private ReentrantLock lock = new ReentrantLock();
+
+    public void test() {
+
+        try {
+
+            // waiting thread can be interrupted
+            lock.lockInterruptibly();
+
+            try {
+                System.out.println("Lock acquired");
+            } finally {
+                lock.unlock();
+            }
+
+        } catch (InterruptedException e) {
+
+            System.out.println("Thread interrupted while waiting");
+        }
+    }
+}
+```
+
+---
+
+## 5. Fair Lock Example
+
+### FairLockExample.java
+
+```java id="4a0ws7"
+import java.util.concurrent.locks.ReentrantLock;
+
+public class FairLockExample {
+
+    // fairness = true
+    // threads get lock in waiting order
+    private ReentrantLock lock = new ReentrantLock(true);
+
+    public void test() {
+
+        lock.lock();
+
+        try {
+            System.out.println(Thread.currentThread().getName());
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+```
+
+---
+
+## 6. Multiple Conditions Example
+
+### ConditionExample.java
+
+```java id="p8a8pv"
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class ConditionExample {
+
+    private ReentrantLock lock = new ReentrantLock();
+
+    // multiple condition queues
+    private Condition readCondition = lock.newCondition();
+    private Condition writeCondition = lock.newCondition();
+
+    public void read() throws InterruptedException {
+
+        lock.lock();
+
+        try {
+
+            // thread waits
+            readCondition.await();
+
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void write() {
+
+        lock.lock();
+
+        try {
+
+            // wake waiting read thread
+            readCondition.signal();
+
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+```
 ---
 
 ## ReentrantLock — Full API

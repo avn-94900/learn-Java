@@ -102,7 +102,7 @@ CompletableFuture<String> result =
     Services.getUser()
             .thenCombine(
                 Services.getPayment(),
-                (user, payment) -> user + " | " + payment
+                (user, payment) -> user + " | " + payment   // anil | paid
             );
 
 // getUser and getPayment run in parallel → merged when both complete

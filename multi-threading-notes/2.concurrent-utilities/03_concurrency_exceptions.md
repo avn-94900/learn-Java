@@ -16,6 +16,7 @@
 | `BrokenBarrierException` | `java.util.concurrent` | Yes | `CyclicBarrier` broken or reset while threads wait | Indicates a serious sync problem; handle and abort |
 
 ---
+```j
 
 ## Thread Lifecycle Exceptions
 
